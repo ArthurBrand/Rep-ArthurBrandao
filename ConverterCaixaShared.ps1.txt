@@ -1,0 +1,74 @@
+#Install-Module -Name ExchangeOnlineManagement
+#Install-Module MSOnline.
+
+#Variavel
+
+# Digite o login do usuario
+
+#Não alterar
+#$Usuario365 = "$Usuario@dominio.com.br"
+
+Function ConectarAD-365 { 
+Import-Module ExchangeOnlineManagement
+Connect-MsolService
+}
+
+Function ConectarExchange{
+$LiveCred = Get-Credential
+Start-Sleep -Seconds 1.5
+$Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri https://ps.outlook.com/powershell/ -Credential $LiveCred -Authentication Basic -AllowRedirection
+Import-PSSession $Session
+}
+
+Function ConverterSharedBOX{
+
+    Set-Mailbox -identity “$usuario365” -Type Shared
+}
+
+Function ValidarSharedBOX{
+    
+    $resultadoSharedBOX = Get-Mailbox -Identity "$Usuario365" | Format-List RecipientTypeDetails
+
+    if($resultadoSharedBOX = ' SharedMailBox'){
+
+            Write-Host " * Caixa está compartilhada"
+        }else{
+            Write-Host " * Caixa está convencional "
+
+        }
+}
+
+Function PermissaoSharedBox{
+      
+     DO{  
+          write-host "Para o programa ser encerrado basta não digitar nada no campo"     
+         "`n"
+          $usuarioPermissao = read-host -Prompt "Digite a conta que irá ter a permissão concedida"
+
+             if($usuarioPermissao){
+                         
+                        "`n"
+                        Add-MailboxPermission "$Usuario365" -User $usuarioPermissao -AccessRights FullAccess
+                         
+                        "`n"
+                    }else{
+                        $validacao = 0
+                        'Nenhum usuário digitado logo o programa será encerrado'
+                    }
+              }until ($validacao -eq 0 )    
+     }
+
+Function Executar{
+    ConectarAD-365
+    ConectarExchange
+    ConverterSharedBOX
+    ValidarSharedBOX
+    PermissaoSharedBox
+    }
+    
+$Usuario = Read-Host -Prompt 'Digite o email da caixa'
+    if($Usuario){
+       $Usuario365 = "$Usuario"
+       Executar
+     }else{Write-Host "Nenhuma conta foi digitada"}
+     
