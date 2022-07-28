@@ -10,7 +10,7 @@ function conexao{
 
 function teams{
     Grant-CsTenantDialPlan -Identity $conta -PolicyName Categoria5
-    Grant-CsOnlineVoiceRoutingPolicy -Identity $conta -PolicyName "Rota SEDE Prioritario"
+    Grant-CsOnlineVoiceRoutingPolicy -Identity $conta -PolicyName "Sua politica"
     Set-CsPhoneNumberAssignment -Identity $conta -PhoneNumber +55$telefone -PhoneNumberType DirectRouting
 }
 
