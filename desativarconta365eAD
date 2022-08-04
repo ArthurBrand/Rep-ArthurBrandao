@@ -1,0 +1,98 @@
+#Install-Module -Name ExchangeOnlineManagement
+#Install-Module MSOnline.
+
+#Variavel
+
+# Digite o login do usuario
+
+#Não alterar
+#$Usuario365 = "$Usuario@seudominio.com.br"
+
+Function ConectarAD-365 { 
+
+Import-Module ExchangeOnlineManagement
+Connect-MsolService
+#Connect-AzureAD
+Import-Module ActiveDirectory
+
+}
+
+
+#Função de carregar a base do AD 
+Function Carregar-BaseAD {
+
+    $serverName = "Servidor AD"
+    $searchBase = "Path da OU do AD"
+    $propertyList  = "Enabled"
+
+    Write-Host 
+    Write-Host "Carregando repositório AD de '" $searchBase "'..."
+
+    $script:listaUsuariosAD = Get-ADUser -Filter * -Properties $propertyList -Server $serverName -SearchBase $searchBase | Select Enabled
+    #$script:listaUsuariosAD = Get-ADUser -Filter 'Enabled -eq $true' -Properties $propertyList -Server $serverName -SearchBase $searchBase
+
+    Write-Host ". Encontradas" $script:listaUsuariosAD.Count "contas de usuários"
+    Write-Host ". Concluído!"
+
+    }
+
+# Executa o comando de desativar o usuario 
+
+Function Desativar-UsuarioAD{
+    Disable-ADAccount -Identity $Usuario
+}
+
+# Faz a validação e entrega o resultado no prompt
+
+Function Validar-UsuarioAD{
+
+    Write-host "* Validando operação"
+
+    $resultadoAD = Get-ADUser -Identity $Usuario | Select Enabled
+
+    if($resultadoAD ='false'){
+       
+        Write-Host ". esta inativo"
+
+    }else{
+        write-host ". esta ativo"
+        break
+    }
+}
+
+
+Function Desativar-Usuario365{
+
+   Set-MsolUser -UserPrincipalName $Usuario365 -BlockCredential $true
+}
+
+
+Function Validar-Usuario365{
+
+   $resultado365 = Get-MsolUser -UserPrincipalName $Usuario365 | Select BlockCredential 
+    if($resultado365='true'){
+
+        write-host " * Conta está desabilitada"
+    }else{
+        write-host " * Conta está habilitada"
+    }
+}
+
+
+Function Executar{
+    ConectarAD-365
+    Carregar-BaseAD
+    Desativar-UsuarioAD
+    Validar-UsuarioAD
+    Desativar-Usuario365
+    Validar-Usuario365
+    break
+    }
+    
+$Usuario = Read-Host -Prompt 'Digite o nome do usuario completo ex: contoso@contoso.com.br'
+    if($Usuario){
+       $Usuario365 = "$Usuario@seudomini.com.br"
+       Executar
+     }else{Write-Host " Nenhuma conta foi digitada"}
+
+
