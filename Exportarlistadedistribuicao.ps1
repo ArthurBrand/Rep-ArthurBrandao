@@ -1,9 +1,11 @@
 ﻿#Script desenvolvido para exportar membros de uma lista de distribuição.
 # Versão 1.0 - 14/07/2022
 #Import-Module MSOnline
+#Import-Module ExchangeOnlineManagement
 
 function ConectarAD-365 { 
 Connect-MsolService
+Connect-ExchangeOnline
 }
 
 function ExportarLista{
